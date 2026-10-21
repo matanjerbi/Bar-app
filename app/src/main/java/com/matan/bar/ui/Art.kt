@@ -375,7 +375,7 @@ private fun DrawScope.drawGarnish(gar: Garnish, g: Geo, w: Float, h: Float, sw: 
         Garnish.GRAPEFRUIT_TWIST -> twist(at.copy(y = at.y + h * 0.02f), w, Color(0xFFF27B78), sw)
         Garnish.CHERRY -> {
             val c = Offset(at.x - w * 0.04f, at.y - h * 0.035f)
-            drawPath(Path().apply { moveTo(c.x, c.y - w * 0.04f); quadTo(c.x + w * 0.02f, c.y - w * 0.14f, c.x + w * 0.1f, c.y - w * 0.16f) },
+            drawPath(Path().apply { moveTo(c.x, c.y - w * 0.04f); quadraticBezierTo(c.x + w * 0.02f, c.y - w * 0.14f, c.x + w * 0.1f, c.y - w * 0.16f) },
                 Color(0xFF5B3A1A), style = Stroke(sw * 1.2f, cap = StrokeCap.Round))
             drawCircle(Color(0xFF7A0A1C), w * 0.05f, c)
             drawCircle(Color.White.copy(alpha = 0.35f), w * 0.014f, Offset(c.x - w * 0.015f, c.y - w * 0.015f))
