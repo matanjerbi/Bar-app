@@ -107,6 +107,9 @@ fun MakeScreen(vm: AppViewModel, nav: NavController) {
                     )
                 }
             }
+            suggestions.firstOrNull()?.let { top ->
+                item { BestBuyCard(top) { nav.navigate(Routes.SHOPPING) } }
+            }
             if (ready.isNotEmpty()) {
                 item { SectionTitle("מומלץ לך עכשיו") }
                 item {
@@ -142,29 +145,6 @@ fun MakeScreen(vm: AppViewModel, nav: NavController) {
                         sub = "חסר: ${Ingredients.name(part.key)}" + if (prep) " · אפשר להכין בבית" else "",
                         subColor = if (prep) Orange else Red,
                     ) { nav.navigate(Routes.cocktail(c.key)) }
-                }
-            }
-            if (suggestions.isNotEmpty()) {
-                item { SectionTitle("מה כדאי לקנות או להכין") }
-                items(suggestions, key = { "s_" + it.key }) { s ->
-                    Card(Modifier.fillMaxWidth()) {
-                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    (if (s.canPrep) "להכין: " else "") + Ingredients.name(s.key),
-                                    fontWeight = FontWeight.Bold,
-                                )
-                                Text(
-                                    "+${s.unlocks.size} קוקטיילים: " + s.unlocks.take(4).joinToString(", ") { it.name },
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                            val ing = Ingredients[s.key]
-                            if (ing != null && !ing.group) {
-                                TextButton(onClick = { scope.launch { vm.repo.setStock(s.key, true, LocalDate.now().toEpochDay()) } }) { Text("יש לי") }
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -268,6 +248,9 @@ fun BarScreen(vm: AppViewModel, nav: NavController) {
                     com.matan.bar.ui.Stat("${st.stock.size}", "רכיבים בבר", Modifier.weight(1f))
                     com.matan.bar.ui.Stat("$readyCount", "קוקטיילים מוכנים", Modifier.weight(1f))
                 }
+            }
+            item {
+                Button(onClick = { nav.navigate(Routes.SHOPPING) }, Modifier.fillMaxWidth().padding(top = 8.dp)) { Text("🛒 מה הכי שווה לקנות?") }
             }
             item {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp), singleLine = true, label = { Text("חיפוש") })

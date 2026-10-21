@@ -41,12 +41,32 @@ object Logic {
     }
 
     /** What to buy (or make) next: ingredients that each complete the most "one away" cocktails. */
-    fun suggestions(all: List<Cocktail>, bar: Bar, limit: Int = 8): List<Suggestion> =
+    fun suggestions(all: List<Cocktail>, bar: Bar, limit: Int = 30): List<Suggestion> =
         availability(all, bar).oneAway
             .groupBy { it.second.key }
             .map { (key, list) -> Suggestion(key, list.map { it.first }, bar.canPrep(key)) }
             .sortedByDescending { it.unlocks.size }
             .take(limit)
+
+    data class PairSuggestion(val a: String, val b: String, val unlocks: List<Cocktail>)
+
+    /**
+     * Two ingredients worth buying together: they unlock drinks that neither unlocks alone
+     * (cocktails missing exactly these two). Ranked by how many drinks the pair opens in total.
+     */
+    fun pairSuggestions(all: List<Cocktail>, bar: Bar, limit: Int = 5): List<PairSuggestion> {
+        val missing = all.associateWith { c -> bar.missing(c).map { it.key }.toSet() }
+        val needTwo = missing.filter { it.value.size == 2 }
+        val pairs = needTwo.values.map { it.sorted() }.distinct()
+        return pairs.map { (a, b) ->
+            val unlocks = missing.filter { (_, m) -> m.isNotEmpty() && (m - a - b).isEmpty() }.keys.toList()
+            PairSuggestion(a, b, unlocks)
+        }
+            // only pairs that open something new together
+            .filter { p -> p.unlocks.any { missing[it]!!.size == 2 } }
+            .sortedByDescending { it.unlocks.size }
+            .take(limit)
+    }
 
     // ---------- amounts ----------
 

@@ -82,4 +82,11 @@ class LogicTest {
         assertTrue(s.any { it.contains("ניעור יבש") })
         assertTrue(s.last().startsWith("קישוט"))
     }
+
+    @Test fun pairs_unlockTogether() {
+        val bar = Bar(setOf("gin"))
+        val pairs = Logic.pairSuggestions(Cocktails.all, bar, limit = 50)
+        val negroni = pairs.find { setOf(it.a, it.b) == setOf("campari", "sweet_vermouth") }
+        assertTrue(negroni != null && negroni.unlocks.any { it.key == "negroni" })
+    }
 }

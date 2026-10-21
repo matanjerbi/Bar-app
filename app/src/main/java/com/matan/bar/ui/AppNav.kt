@@ -79,6 +79,7 @@ object Routes {
     const val BAR = "bar"
     const val BUILDER = "builder"
     const val SETTINGS = "settings"
+    const val SHOPPING = "shopping"
     fun cocktail(key: String) = "cocktail/$key"
     fun custom(id: Long) = "custom/$id"
 }
@@ -127,6 +128,7 @@ fun AppNav() {
             composable(Routes.BAR) { BarScreen(vm, nav) }
             composable(Routes.BUILDER) { BuilderScreen(vm, nav) }
             composable(Routes.SETTINGS) { SettingsScreen(vm, nav) }
+            composable(Routes.SHOPPING) { com.matan.bar.ui.screens.ShoppingScreen(vm, nav) }
             composable("cocktail/{key}", listOf(navArgument("key") { type = NavType.StringType })) {
                 CocktailScreen(vm, nav, it.arguments!!.getString("key")!!)
             }
