@@ -1,8 +1,6 @@
 package com.matan.bar.ui
 
 import android.content.Context
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -25,9 +23,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.Shapes
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,21 +40,67 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun BarTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
-    val context = LocalContext.current
-    val scheme = when {
-        Build.VERSION.SDK_INT >= 31 -> if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        dark -> darkColorScheme(primary = Color(0xFFFFB4A9), secondary = Color(0xFFFFD180))
-        else -> lightColorScheme(primary = Color(0xFF8E2C48), secondary = Color(0xFFB07A00))
-    }
-    MaterialTheme(colorScheme = scheme, content = content)
+/** Always-dark "speakeasy" palette: warm black, copper and gold. */
+private val BarColors = darkColorScheme(
+    primary = Color(0xFFE9B872),
+    onPrimary = Color(0xFF2A1C08),
+    primaryContainer = Color(0xFF4A3214),
+    onPrimaryContainer = Color(0xFFFBDDAA),
+    secondary = Color(0xFFE08E62),
+    onSecondary = Color(0xFF2E1408),
+    secondaryContainer = Color(0xFF4A2618),
+    onSecondaryContainer = Color(0xFFFFD8C4),
+    tertiary = Color(0xFFD9637C),
+    tertiaryContainer = Color(0xFF55202D),
+    onTertiaryContainer = Color(0xFFFFD9DF),
+    background = Color(0xFF110C0D),
+    onBackground = Color(0xFFF3E8DC),
+    surface = Color(0xFF110C0D),
+    onSurface = Color(0xFFF3E8DC),
+    surfaceVariant = Color(0xFF2B2124),
+    onSurfaceVariant = Color(0xFFD7C6B8),
+    surfaceContainerLowest = Color(0xFF0B0809),
+    surfaceContainerLow = Color(0xFF181213),
+    surfaceContainer = Color(0xFF1D1618),
+    surfaceContainerHigh = Color(0xFF261D20),
+    surfaceContainerHighest = Color(0xFF30262A),
+    outline = Color(0xFF9A887C),
+    outlineVariant = Color(0xFF4A3D38),
+    error = Color(0xFFFF8A80),
+    errorContainer = Color(0xFF5A1D1D),
+    onErrorContainer = Color(0xFFFFDAD6),
+)
+
+private val Display = FontFamily.Serif
+
+private val BarType = Typography().let { t ->
+    t.copy(
+        displaySmall = t.displaySmall.copy(fontFamily = Display, fontWeight = FontWeight.Bold),
+        headlineLarge = t.headlineLarge.copy(fontFamily = Display, fontWeight = FontWeight.Bold),
+        headlineMedium = t.headlineMedium.copy(fontFamily = Display, fontWeight = FontWeight.Bold),
+        headlineSmall = t.headlineSmall.copy(fontFamily = Display, fontWeight = FontWeight.Bold),
+        titleLarge = t.titleLarge.copy(fontFamily = Display, fontWeight = FontWeight.Bold),
+        titleMedium = t.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+    )
 }
 
-val Green = Color(0xFF388E3C)
-val Red = Color(0xFFD32F2F)
-val Orange = Color(0xFFF57C00)
+private val BarShapes = Shapes(
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(28.dp),
+)
+
+@Composable
+fun BarTheme(content: @Composable () -> Unit) {
+    MaterialTheme(colorScheme = BarColors, typography = BarType, shapes = BarShapes, content = content)
+}
+
+/** Gold used for headings and highlights. */
+val Gold = Color(0xFFE9B872)
+
+val Green = Color(0xFF8BC34A)
+val Red = Color(0xFFFF7A6E)
+val Orange = Color(0xFFFFB74D)
 
 @Composable
 fun Loading() {

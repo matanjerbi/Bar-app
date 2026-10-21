@@ -1,6 +1,15 @@
 package com.matan.bar.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.graphics.Brush
+import com.matan.bar.ui.CocktailCard
+import com.matan.bar.ui.Gold
+import com.matan.bar.ui.emoji
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -78,8 +87,34 @@ fun MakeScreen(vm: AppViewModel, nav: NavController) {
     val oneAway = av.oneAway.sortedByDescending { score(it.first) }
     val suggestions = Logic.suggestions(all, bar)
 
-    Screen("מה אפשר להכין", tab = true, actions = { SettingsAction(nav) }) { pad ->
+    Screen("Bar", tab = true, actions = { SettingsAction(nav) }) { pad ->
         LazyColumn(Modifier.padding(pad).fillMaxSize(), contentPadding = listPad, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            item {
+                val hour = java.time.LocalTime.now().hour
+                val hello = when (hour) { in 5..11 -> "בוקר טוב"; in 12..16 -> "צהריים טובים"; in 17..21 -> "ערב טוב"; else -> "לילה טוב" }
+                Column(
+                    Modifier.fillMaxWidth()
+                        .background(
+                            Brush.linearGradient(listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.tertiaryContainer)),
+                            RoundedCornerShape(24.dp),
+                        )
+                        .padding(20.dp),
+                ) {
+                    Text("$hello 🍸", style = MaterialTheme.typography.headlineSmall, color = Gold)
+                    Text(
+                        if (st.stock.isEmpty()) "הבר עוד ריק" else "${ready.size} קוקטיילים מוכנים · ${oneAway.size} במרחק רכיב אחד",
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+            if (ready.isNotEmpty()) {
+                item { SectionTitle("מומלץ לך עכשיו") }
+                item {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        items(ready.take(8), key = { "f_" + it.key }) { c -> CocktailCard(c) { nav.navigate(Routes.cocktail(c.key)) } }
+                    }
+                }
+            }
             if (st.stock.isEmpty()) {
                 item {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
@@ -91,7 +126,7 @@ fun MakeScreen(vm: AppViewModel, nav: NavController) {
                     }
                 }
             }
-            item { SectionTitle("אפשר להכין עכשיו (${ready.size})") }
+            item { SectionTitle("כל מה שאפשר להכין (${ready.size})") }
             if (ready.isEmpty() && st.stock.isNotEmpty()) item { Text("עוד אין קוקטייל שיש לו את כל הרכיבים – תסתכל למטה מה חסר") }
             items(ready, key = { "r_" + it.key }) { c ->
                 val m = st.meta(c.key)
@@ -179,13 +214,19 @@ fun CatalogScreen(vm: AppViewModel, nav: NavController) {
                     TextButton(onClick = { showFilters = !showFilters }) { Text(if (showFilters) "הסתר סינון" else "סינון") }
                 }
             }
+            item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item { FilterChip(selected = family.isEmpty(), onClick = { family = "" }, label = { Text("✨ הכל") }) }
+                    items(Family.entries) { f ->
+                        FilterChip(selected = family == f.name, onClick = { family = if (family == f.name) "" else f.name }, label = { Text("${f.emoji()} ${f.label()}") })
+                    }
+                }
+            }
             if (showFilters) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Dropdown("בסיס", listOf("") + Logic.baseFilters, base, { if (it.isEmpty()) "הכל" else Ingredients.name(it) }, { base = it }, Modifier.weight(1f))
-                            Dropdown("משפחה", listOf("") + Family.entries.map { it.name }, family,
-                                { if (it.isEmpty()) "הכל" else Family.valueOf(it).label() }, { family = it }, Modifier.weight(1f))
                         }
                         MultiChips(Tag.entries, tags, { it.label() }) { tags = it }
                         SwitchRow("רק מה שאפשר להכין עכשיו", onlyReady) { onlyReady = it }
@@ -208,6 +249,7 @@ fun CatalogScreen(vm: AppViewModel, nav: NavController) {
 
 // ======================= My bar =======================
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BarScreen(vm: AppViewModel, nav: NavController) {
     val st = vm.state.collectAsStateWithLifecycle().value ?: return Loading()
@@ -222,7 +264,10 @@ fun BarScreen(vm: AppViewModel, nav: NavController) {
     Screen("הבר שלי", tab = true, actions = { SettingsAction(nav) }) { pad ->
         LazyColumn(Modifier.padding(pad).fillMaxSize(), contentPadding = listPad, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             item {
-                Text("${st.stock.size} רכיבים · אפשר להכין $readyCount קוקטיילים", style = MaterialTheme.typography.bodyMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.matan.bar.ui.Stat("${st.stock.size}", "רכיבים בבר", Modifier.weight(1f))
+                    com.matan.bar.ui.Stat("$readyCount", "קוקטיילים מוכנים", Modifier.weight(1f))
+                }
             }
             item {
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(vertical = 8.dp), singleLine = true, label = { Text("חיפוש") })
@@ -232,22 +277,36 @@ fun BarScreen(vm: AppViewModel, nav: NavController) {
                 if (inCat.isNotEmpty()) {
                     item(key = "h_${cat.name}") {
                         val have = inCat.count { it.key in st.stock }
-                        SectionTitle("${cat.label()} ($have/${inCat.size})")
+                        SectionTitle("${cat.emoji()} ${cat.label()} ($have/${inCat.size})")
                     }
-                    items(inCat, key = { it.key }) { ing ->
+                    val (preps, plain) = inCat.partition { it.prep != null }
+                    if (plain.isNotEmpty()) item(key = "c_${cat.name}") {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            plain.forEach { ing ->
+                                val checked = ing.key in st.stock
+                                FilterChip(
+                                    selected = checked,
+                                    onClick = { scope.launch { vm.repo.setStock(ing.key, !checked, today) } },
+                                    label = { Text(ing.name) },
+                                    leadingIcon = if (checked) { { Text("✓") } } else null,
+                                )
+                            }
+                        }
+                    }
+                    items(preps, key = { it.key }) { ing ->
                         val stock = st.stock[ing.key]
                         val checked = stock != null
-                        Row(
-                            Modifier.fillMaxWidth().clickable {
-                                scope.launch { vm.repo.setStock(ing.key, !checked, today) }
-                            },
-                            verticalAlignment = Alignment.CenterVertically,
+                        val prep = ing.prep!!
+                        Card(
+                            Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer
+                            ),
                         ) {
-                            Checkbox(checked = checked, onCheckedChange = { scope.launch { vm.repo.setStock(ing.key, it, today) } })
-                            Column(Modifier.weight(1f)) {
-                                Text(ing.name)
-                                val prep = ing.prep
-                                if (prep != null) {
+                            Row(Modifier.padding(start = 4.dp, end = 8.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(checked = checked, onCheckedChange = { scope.launch { vm.repo.setStock(ing.key, it, today) } })
+                                Column(Modifier.weight(1f)) {
+                                    Text("🫙 " + ing.name)
                                     val age = stock?.let { today - it.since }
                                     val text = when {
                                         age == null -> if (bar.canPrep(ing.key)) "הכנה ביתית · יש לך הכול להכין" else "הכנה ביתית"
@@ -256,12 +315,10 @@ fun BarScreen(vm: AppViewModel, nav: NavController) {
                                     }
                                     Text(
                                         text, style = MaterialTheme.typography.bodySmall,
-                                        color = if (age != null && age > prep.shelfDays) Red else MaterialTheme.colorScheme.outline,
+                                        color = if (age != null && age > prep.shelfDays) Red else MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                            }
-                            if (ing.prep != null) {
-                                if (checked) TextButton(onClick = { scope.launch { vm.repo.setStock(ing.key, true, today) } }) { Text("הכנתי עכשיו") }
+                                if (checked) TextButton(onClick = { scope.launch { vm.repo.setStock(ing.key, true, today) } }) { Text("הכנתי") }
                                 TextButton(onClick = { prepKey = ing.key }) { Text("מתכון") }
                             }
                         }

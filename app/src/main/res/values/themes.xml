@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Bar" parent="android:Theme.Material.Light.NoActionBar" />
-    <color name="ic_launcher_background">#5A1F3A</color>
+    <style name="Theme.Bar" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/bar_background</item>
+    </style>
+    <color name="bar_background">#110C0D</color>
+    <color name="ic_launcher_background">#2A1418</color>
 </resources>

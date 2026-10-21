@@ -150,7 +150,7 @@ fun BuilderScreen(vm: AppViewModel, nav: NavController) {
 
             built?.let { c ->
                 HorizontalDivider()
-                Text(c.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                com.matan.bar.ui.DrinkHero(c)
                 val similar = Builder.similar(c, Cocktails.all)
                 if (similar.isNotEmpty()) {
                     Card(Modifier.fillMaxWidth()) {

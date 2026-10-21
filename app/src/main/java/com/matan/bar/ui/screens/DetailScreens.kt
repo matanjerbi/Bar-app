@@ -100,7 +100,7 @@ fun CocktailScreen(vm: AppViewModel, nav: NavController, key: String) {
     val bar = vm.bar(st)
 
     Screen(
-        c.name, nav,
+        "", nav,
         actions = {
             IconButton(onClick = { scope.launch { vm.repo.saveMeta(meta.copy(favorite = !meta.favorite)) } }) {
                 Icon(if (meta.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, "מועדף", tint = if (meta.favorite) Red else androidx.compose.material3.LocalContentColor.current)
@@ -111,10 +111,9 @@ fun CocktailScreen(vm: AppViewModel, nav: NavController, key: String) {
             }
         },
     ) { pad ->
-        Column(
-            Modifier.padding(pad).fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        Column(Modifier.padding(pad).fillMaxSize().imePadding().verticalScroll(rememberScrollState())) {
+          com.matan.bar.ui.DrinkHero(c)
+          Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             RecipeView(c, bar, settings.useOz, servings, { servings = it }, onPrepClick = { prepKey = it })
             HorizontalDivider()
             Text("הדירוג שלי", style = MaterialTheme.typography.titleMedium)
@@ -132,6 +131,7 @@ fun CocktailScreen(vm: AppViewModel, nav: NavController, key: String) {
                     }
                 }) { Text("צור גרסה משלי") }
             }
+          }
         }
     }
     prepKey?.let { PrepDialog(it, bar) { prepKey = null } }

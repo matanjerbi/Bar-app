@@ -1,6 +1,19 @@
 package com.matan.bar.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import com.matan.bar.logic.Tag
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,46 +45,118 @@ import kotlin.math.roundToInt
 
 fun pct(v: Double) = "${(v * 100).roundToInt()}%"
 
-/** List row for a cocktail. */
+/** Small rounded label. */
 @Composable
-fun CocktailRow(c: Cocktail, favorite: Boolean, rating: Int, sub: String? = null, subColor: androidx.compose.ui.graphics.Color? = null, onClick: () -> Unit) {
+fun Pill(text: String, color: Color = MaterialTheme.colorScheme.primary) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        modifier = Modifier
+            .background(color.copy(alpha = 0.14f), RoundedCornerShape(50))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
+}
+
+/** The drink drawing on a glowing tile. */
+@Composable
+fun ArtTile(c: Cocktail, modifier: Modifier = Modifier, animate: Boolean = false) {
+    val color = remember(c) { drinkColor(c) }
+    Box(
+        modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(Brush.verticalGradient(listOf(color.copy(alpha = 0.28f), MaterialTheme.colorScheme.surfaceContainerLowest))),
+        contentAlignment = Alignment.Center,
+    ) {
+        CocktailArt(c, Modifier.fillMaxSize().padding(8.dp), animate)
+    }
+}
+
+/** List row for a cocktail. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun CocktailRow(c: Cocktail, favorite: Boolean, rating: Int, sub: String? = null, subColor: Color? = null, onClick: () -> Unit) {
     val strength = remember(c) { Logic.strength(c) }
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(c.name, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                if (rating > 0) Text("★".repeat(rating), color = Orange, style = MaterialTheme.typography.bodySmall)
-                if (favorite) Text(" ♥", color = Red)
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            ArtTile(c, Modifier.size(width = 76.dp, height = 92.dp))
+            Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(c.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = MaterialTheme.typography.titleMedium.fontSize),
+                        modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (favorite) Text("♥", color = Red)
+                }
+                if (c.desc.isNotBlank()) {
+                    Text(c.desc, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Pill(pct(strength.abv), MaterialTheme.colorScheme.secondary)
+                    c.tags.filter { it != Tag.CLASSIC && it != Tag.MODERN }.take(2).forEach { Pill(it.label()) }
+                    if (rating > 0) Pill("★".repeat(rating), Orange)
+                }
+                if (sub != null) Text(sub, style = MaterialTheme.typography.labelMedium, color = subColor ?: MaterialTheme.colorScheme.primary)
             }
-            if (c.desc.isNotBlank()) {
-                Text(c.desc, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            Text(
-                "${c.family.label()} · ${pct(strength.abv)} · " + c.tags.take(3).joinToString(" · ") { it.label() },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-            )
-            if (sub != null) Text(sub, style = MaterialTheme.typography.bodySmall, color = subColor ?: MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+/** Big card for horizontal "for you" rows. */
+@Composable
+fun CocktailCard(c: Cocktail, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.width(150.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        ArtTile(c, Modifier.fillMaxWidth().height(170.dp))
+        Column(Modifier.padding(10.dp)) {
+            Text(c.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(c.family.label(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+        }
+    }
+}
+
+/** Header for a drink: big animated drawing over a glow in the drink's colour. */
+@Composable
+fun DrinkHero(c: Cocktail) {
+    val color = remember(c) { drinkColor(c) }
+    Box(
+        Modifier.fillMaxWidth().height(300.dp)
+            .background(Brush.verticalGradient(listOf(color.copy(alpha = 0.45f), MaterialTheme.colorScheme.background))),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        CocktailArt(c, Modifier.fillMaxHeight().fillMaxWidth(0.62f).padding(top = 16.dp, bottom = 56.dp), animate = true)
+        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(c.name, style = MaterialTheme.typography.headlineMedium, color = Gold)
+            Text(c.family.label(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 /** Full recipe: info, strength, ingredients with what you have, servings, steps. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecipeView(c: Cocktail, bar: Bar, oz: Boolean, servings: Int, onServings: (Int) -> Unit, onPrepClick: (String) -> Unit = {}) {
     val strength = remember(c) { Logic.strength(c) }
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (c.desc.isNotBlank()) Text(c.desc)
-        Text(
-            "${c.family.label()} · ${c.method.label()} · כוס ${c.glass.label()} · ${c.ice.label()}" +
-                " · קושי ${"●".repeat(c.difficulty)}${"○".repeat(3 - c.difficulty.coerceIn(1, 3))}",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Text(
-            "~${pct(strength.abv)} אלכוהול · ~${"%.1f".format(strength.standardDrinks)} מנות סטנדרטיות · ~${strength.volumeMl.roundToInt()} מ\"ל במשקה",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.outline,
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (c.desc.isNotBlank()) Text(c.desc, style = MaterialTheme.typography.bodyLarge)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Pill(c.method.label())
+            Pill("כוס ${c.glass.label()}")
+            Pill(c.ice.label())
+            Pill("קושי ${"●".repeat(c.difficulty)}${"○".repeat(3 - c.difficulty.coerceIn(1, 3))}", MaterialTheme.colorScheme.secondary)
+            c.tags.forEach { Pill(it.label(), MaterialTheme.colorScheme.tertiary) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Stat("~${pct(strength.abv)}", "אלכוהול", Modifier.weight(1f))
+            Stat("~${"%.1f".format(strength.standardDrinks)}", "מנות סטנדרטיות", Modifier.weight(1f))
+            Stat("~${strength.volumeMl.roundToInt()}", "מ\"ל במשקה", Modifier.weight(1f))
+        }
 
         val missing = bar.missing(c)
         Card(
@@ -169,4 +254,40 @@ fun Stars(rating: Int, onChange: (Int) -> Unit) {
             )
         }
     }
+}
+
+@Composable
+fun Stat(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(16.dp))
+            .padding(vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = Gold)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+fun com.matan.bar.logic.Family.emoji() = when (this) {
+    com.matan.bar.logic.Family.SOUR -> "🍋"
+    com.matan.bar.logic.Family.EQUAL_PARTS -> "⚖️"
+    com.matan.bar.logic.Family.OLD_FASHIONED -> "🥃"
+    com.matan.bar.logic.Family.MARTINI_MANHATTAN -> "🍸"
+    com.matan.bar.logic.Family.NEGRONI -> "🍊"
+    com.matan.bar.logic.Family.HIGHBALL -> "🧊"
+    com.matan.bar.logic.Family.SPRITZ -> "🥂"
+    com.matan.bar.logic.Family.TIKI -> "🍍"
+    com.matan.bar.logic.Family.CREAMY -> "☕"
+}
+
+fun com.matan.bar.logic.IngCat.emoji() = when (this) {
+    com.matan.bar.logic.IngCat.SPIRIT -> "🥃"
+    com.matan.bar.logic.IngCat.LIQUEUR -> "🍾"
+    com.matan.bar.logic.IngCat.WINE -> "🍷"
+    com.matan.bar.logic.IngCat.BITTERS -> "💧"
+    com.matan.bar.logic.IngCat.FRESH -> "🍋"
+    com.matan.bar.logic.IngCat.SWEETENER -> "🍯"
+    com.matan.bar.logic.IngCat.MIXER -> "🫧"
+    com.matan.bar.logic.IngCat.STAPLE -> "🧂"
 }
