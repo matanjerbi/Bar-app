@@ -10,7 +10,8 @@ class Bar(val stock: Set<String>) {
         return stock.any { Ingredients.isA(it, key) }
     }
 
-    fun partOk(p: Part) = has(p.key) || p.alts.any { has(it) }
+    fun partOk(p: Part) = has(p.key) || p.alts.any { has(it) } ||
+        (p.key == Foam.EGG && Foam.vegan.any { has(it) })
 
     /** Required parts that are missing. */
     fun missing(c: Cocktail): List<Part> = c.parts.filter { !it.optional && !partOk(it) }

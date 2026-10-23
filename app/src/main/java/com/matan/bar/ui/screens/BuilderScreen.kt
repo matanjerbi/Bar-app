@@ -103,7 +103,7 @@ fun BuilderScreen(vm: AppViewModel, nav: NavController) {
                     val sweet = pick(sweets, sweetSel) { it.key }
                     val mods = listOf<Builder.Opt?>(null) + Builder.sourModifiersFor(base).filter { ok(it.key) }
                     val mod = mods.find { it?.key == modSel.ifEmpty { null } } ?: null
-                    val eggOk = ok("egg")
+                    val eggOk = ok("egg") || com.matan.bar.logic.Foam.vegan.any { ok(it) }
                     val useEgg = egg && eggOk
                     val accents = listOf<Builder.Accent?>(null) + Builder.accentsFor(base, useEgg).filter { ok(it.needs) }
                     val accent = accents.find { it?.name == accentSel.ifEmpty { null } }
@@ -115,7 +115,7 @@ fun BuilderScreen(vm: AppViewModel, nav: NavController) {
                         ChoiceChips(citrusOpts, citrus, { Ingredients.name(it) }) { citrusSel = it }
                         Dropdown("ממתיק", sweets, sweet, { Ingredients.name(it.key) }, { sweetSel = it.key })
                         Dropdown("ליקר משלים (לא חובה)", mods, mod, { it?.let { m -> Ingredients.name(m.key) } ?: "בלי" }, { modSel = it?.key ?: "" })
-                        if (eggOk) SwitchRow("חלבון לקצף", egg) { egg = it }
+                        if (eggOk) SwitchRow("קצף (חלבון או מי חומוס)", egg) { egg = it }
                         Dropdown("נגיעה (לא חובה)", accents, accent, { it?.label ?: "בלי" }, { accentSel = it?.name ?: "" })
                         Builder.buildSour(Builder.SourSpec(base, citrus, sweet.key, mod?.key, useEgg, accent))
                     }

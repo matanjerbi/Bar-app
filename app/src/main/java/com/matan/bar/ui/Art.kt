@@ -66,7 +66,7 @@ private val tints: Map<String, Tint> = mapOf(
     "angostura" to Tint(Color(0xFF7A1410), 1.6f), "orange_bitters" to Tint(Color(0xFFD06A1A), 1.0f), "peychauds" to Tint(Color(0xFFC0182A), 1.4f),
     "lemon" to Tint(Color(0xFFF5E37A), 0.35f), "lime" to Tint(Color(0xFFD3E88E), 0.35f),
     "orange" to Tint(Color(0xFFFFA62B), 0.8f), "grapefruit" to Tint(Color(0xFFF7A9A0), 0.45f),
-    "egg" to Tint(Color(0xFFFFF1CF), 0.6f), "cream" to Tint(Color(0xFFFFF8EC), 1.2f),
+    "egg" to Tint(Color(0xFFFFF1CF), 0.6f), "aquafaba" to Tint(Color(0xFFF2E6C8), 0.6f), "cream" to Tint(Color(0xFFFFF8EC), 1.2f),
     "pineapple_juice" to Tint(Color(0xFFF8D35E), 0.6f), "cranberry_juice" to Tint(Color(0xFFC2183A), 1.0f),
     "coconut_cream" to Tint(Color(0xFFFFFBF2), 1.2f), "coffee" to Tint(Color(0xFF2A1408), 1.4f),
     "simple_syrup" to Tint(Color(0xFFF6F4EE), 0.02f), "demerara_syrup" to Tint(Color(0xFFB8732A), 0.5f),

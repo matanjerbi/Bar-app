@@ -30,6 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.matan.bar.logic.Foam
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -141,7 +145,12 @@ fun DrinkHero(c: Cocktail) {
 /** Full recipe: info, strength, ingredients with what you have, servings, steps. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecipeView(c: Cocktail, bar: Bar, oz: Boolean, servings: Int, onServings: (Int) -> Unit, onPrepClick: (String) -> Unit = {}) {
+fun RecipeView(original: Cocktail, bar: Bar, oz: Boolean, servings: Int, onServings: (Int) -> Unit, onPrepClick: (String) -> Unit = {}) {
+    val eggy = Foam.hasEgg(original)
+    val veganKey = Foam.veganInBar(bar)
+    // no eggs but a vegan foamer in the bar -> start with the vegan version
+    var vegan by remember(original.key) { mutableStateOf(eggy && !bar.has(Foam.EGG) && veganKey != null) }
+    val c = if (eggy && vegan) Foam.veganize(original, veganKey ?: Foam.AQUAFABA) else original
     val strength = remember(c) { Logic.strength(c) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (c.desc.isNotBlank()) Text(c.desc, style = MaterialTheme.typography.bodyLarge)
@@ -169,6 +178,8 @@ fun RecipeView(c: Cocktail, bar: Bar, oz: Boolean, servings: Int, onServings: (I
                 Modifier.padding(12.dp),
             )
         }
+
+        if (eggy) VeganCard(vegan, veganKey, Foam.stillAnimal(c)) { vegan = it }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("רכיבים", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -216,6 +227,29 @@ fun RecipeView(c: Cocktail, bar: Bar, oz: Boolean, servings: Int, onServings: (I
         }
         Logic.dryShakeTip(c)?.let {
             Text("💡 $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+        }
+    }
+}
+
+/** Swap the egg white for aquafaba / a vegan foamer. */
+@Composable
+private fun VeganCard(vegan: Boolean, inBar: String?, stillAnimal: List<String>, onChange: (Boolean) -> Unit) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            SwitchRow("🌱 גרסה טבעונית (בלי ביצה)", vegan, onChange)
+            val text = when {
+                vegan && inBar != null -> "החלבון הוחלף ב${Ingredients.name(inBar)} שיש לך בבר. הניעור היבש נשאר אותו דבר."
+                vegan -> "החלבון הוחלף במי חומוס – הנוזל מקופסת חומוס, 30 מ\"ל לכל חלבון. אין לך אותם בבר עדיין."
+                inBar != null -> "יש לך ${Ingredients.name(inBar)} בבר – אפשר להחליף בו את החלבון ולקבל קצף טבעוני."
+                else -> "אם תרצה גרסה טבעונית – החלף את החלבון ב-30 מ\"ל מי חומוס (הנוזל מקופסת חומוס), או בכמה דאשים של מקציף צמחי."
+            }
+            Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (vegan && stillAnimal.isNotEmpty()) {
+                Text(
+                    "שים לב: במשקה נשאר גם ${stillAnimal.joinToString(", ")} – לגרסה טבעונית מלאה צריך תחליף גם לזה.",
+                    style = MaterialTheme.typography.bodySmall, color = Orange,
+                )
+            }
         }
     }
 }
@@ -287,6 +321,7 @@ fun com.matan.bar.logic.IngCat.emoji() = when (this) {
     com.matan.bar.logic.IngCat.WINE -> "🍷"
     com.matan.bar.logic.IngCat.BITTERS -> "💧"
     com.matan.bar.logic.IngCat.FRESH -> "🍋"
+    com.matan.bar.logic.IngCat.FOAMER -> "🥚"
     com.matan.bar.logic.IngCat.SWEETENER -> "🍯"
     com.matan.bar.logic.IngCat.MIXER -> "🫧"
     com.matan.bar.logic.IngCat.STAPLE -> "🧂"

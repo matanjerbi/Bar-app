@@ -89,4 +89,22 @@ class LogicTest {
         val negroni = pairs.find { setOf(it.a, it.b) == setOf("campari", "sweet_vermouth") }
         assertTrue(negroni != null && negroni.unlocks.any { it.key == "negroni" })
     }
+
+    @Test fun vegan_foamerReplacesEgg() {
+        val pisco = Cocktails.all.first { Foam.hasEgg(it) && it.parts.first { p -> p.key == Foam.EGG }.optional.not() }
+        val base = pisco.parts.filter { it.key != Foam.EGG }.map { it.key }.toSet()
+        val noFoam = Bar(base)
+        assertTrue(noFoam.missing(pisco).any { it.key == Foam.EGG })
+        val withAquafaba = Bar(base + Foam.AQUAFABA)
+        assertTrue(withAquafaba.missing(pisco).isEmpty())
+        assertEquals(Foam.AQUAFABA, Foam.veganInBar(withAquafaba))
+
+        val v = Foam.veganize(pisco, Foam.AQUAFABA)
+        assertFalse(Foam.hasEgg(v))
+        val aq = v.parts.first { it.key == Foam.AQUAFABA }
+        assertEquals(Measure.ML, aq.unit)
+        assertTrue(aq.amount >= 15.0)
+        val f = Foam.veganize(pisco, Foam.FOAMER).parts.first { it.key == Foam.FOAMER }
+        assertEquals(Measure.DASH, f.unit)
+    }
 }

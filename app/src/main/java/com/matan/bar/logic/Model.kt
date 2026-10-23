@@ -1,6 +1,6 @@
 package com.matan.bar.logic
 
-enum class IngCat { SPIRIT, LIQUEUR, WINE, BITTERS, FRESH, SWEETENER, MIXER, STAPLE }
+enum class IngCat { SPIRIT, LIQUEUR, WINE, BITTERS, FRESH, FOAMER, SWEETENER, MIXER, STAPLE }
 
 /** Homemade preparation: what it needs, how to make it, how long it keeps (fridge). */
 data class Prep(val needs: List<String>, val recipe: String, val shelfDays: Int)
@@ -68,6 +68,7 @@ fun IngCat.label() = when (this) {
     IngCat.WINE -> "ורמוט ויין"
     IngCat.BITTERS -> "ביטרס"
     IngCat.FRESH -> "פירות, עשבים וטריים"
+    IngCat.FOAMER -> "חומרי הקצפה"
     IngCat.SWEETENER -> "סירופים וממתיקים"
     IngCat.MIXER -> "מיקסרים"
     IngCat.STAPLE -> "בסיסי"

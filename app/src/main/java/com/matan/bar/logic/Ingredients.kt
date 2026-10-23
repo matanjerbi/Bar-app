@@ -1,6 +1,7 @@
 package com.matan.bar.logic
 
 import com.matan.bar.logic.IngCat.BITTERS
+import com.matan.bar.logic.IngCat.FOAMER
 import com.matan.bar.logic.IngCat.FRESH
 import com.matan.bar.logic.IngCat.LIQUEUR
 import com.matan.bar.logic.IngCat.MIXER
@@ -88,7 +89,6 @@ object Ingredients {
         citrus("grapefruit", "אשכולית"),
         i("mint", "נענע", FRESH),
         i("basil", "בזיליקום", FRESH),
-        i("egg", "ביצים (חלבון)", FRESH),
         i("cream", "שמנת מתוקה", FRESH),
         i("ginger_root", "ג'ינג'ר טרי", FRESH),
         i("raspberries", "פטל", FRESH),
@@ -99,6 +99,11 @@ object Ingredients {
         i("coffee", "קפה / אספרסו", FRESH),
         i("orange_flower_water", "מי זהר", FRESH),
         i("cinnamon", "מקלות קינמון", FRESH),
+
+        // ---- foamers ----
+        i("egg", "ביצים (חלבון)", FOAMER),
+        i("aquafaba", "מי חומוס (אקוופבה)", FOAMER),
+        i("vegan_foamer", "מקציף צמחי (Fee Foam / Ms Better's)", FOAMER),
 
         // ---- sweeteners ----
         i("honey", "דבש", SWEETENER),
